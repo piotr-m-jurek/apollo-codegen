@@ -62,4 +62,5 @@ type Query {
   interfaceTest: InterfaceTestCase
   unionTest: UnionTestCase
   scalarTest: Boolean!
+  doubleArrayOfAbstract: [[InterfaceTestCase]!]
 }

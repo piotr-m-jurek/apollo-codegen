@@ -5,6 +5,7 @@ import { typeNameFromGraphQLType } from './types';
 
 import CodeGenerator from "../utilities/CodeGenerator";
 import { GraphQLType } from "graphql";
+import { getNamedType } from 'graphql';
 
 export interface Property {
   fieldName?: string,
@@ -117,8 +118,16 @@ export function propertySetsDeclaration(generator: CodeGenerator, property: Prop
     generator.printOnNewline(`${name}: `);
   }
 
+  let arrayParts = null as string[] | null
   if (isArray) {
-    generator.print(' Array<');
+    if (property.typeName) {
+      const name = getNamedType(property.type || property.fieldType!).name
+      arrayParts = property.typeName.split(name) as string[]
+      generator.print(' ' + arrayParts[0].trim());
+    }
+    else {
+      generator.print(' Array<');
+    }
   }
 
   generator.pushScope({ typeName: name });
@@ -137,13 +146,18 @@ export function propertySetsDeclaration(generator: CodeGenerator, property: Prop
   generator.popScope();
 
   if (isArray) {
-    if (isArrayElementNullable) {
-      generator.print(' | null');
+    if (arrayParts != null) {
+      generator.print(arrayParts[1]);
     }
-    generator.print(' >');
+    else {
+      if (isArrayElementNullable) {
+        generator.print(' | null');
+      }
+      generator.print(' >');
+    }
   }
 
-  if (isNullable) {
+  if (isNullable && arrayParts === null) {
     generator.print(' | null');
   }
 

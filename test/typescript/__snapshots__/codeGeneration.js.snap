@@ -1,5 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`TypeScript code generation #generateSource() should correctly handle nested arrays on abstract types 1`] = `
+"/* tslint:disable */
+//  This file was automatically generated and should not be edited.
+
+export type Array2dQuery = {
+  doubleArrayOfAbstract:  Array< Array<( {
+      __typename: \\"ImplA\\",
+      prop: string,
+    } | {
+      __typename: \\"ImplB\\",
+      prop: string,
+    }
+  ) | null > > | null,
+};
+/* tslint:enable */
+"
+`;
+
 exports[`TypeScript code generation #generateSource() should generate correct list with custom fragment 1`] = `
 "/* tslint:disable */
 //  This file was automatically generated and should not be edited.

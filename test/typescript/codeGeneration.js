@@ -313,5 +313,19 @@ describe('TypeScript code generation', function() {
       const source = generateSource(context);
       expect(source).toMatchSnapshot();
     });
+
+    test('should correctly handle nested arrays on abstract types', () => {
+      const { compileFromSource } = setup(miscSchema);
+      const context = compileFromSource(`
+        query Array2d {
+          doubleArrayOfAbstract {
+            prop
+          }
+        }
+      `);
+
+      const source = generateSource(context);
+      expect(source).toMatchSnapshot();
+    });
   });
 });
