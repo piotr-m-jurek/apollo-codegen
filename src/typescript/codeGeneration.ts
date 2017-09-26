@@ -400,7 +400,21 @@ export function propertyDeclarations(generator: CodeGenerator, properties: Prope
         || property.fragmentSpreads && property.fragmentSpreads.length > 0
       ) {
         propertyDeclaration(generator, property, () => {
-          const properties = propertiesFromFields(generator.context, property.fields!);
+          const type = getNamedType(property.type || property.fieldType!).name
+
+          const fields = property.fields && type ? property.fields.map(field => {
+            if (field.fieldName === '__typename') {
+              return {
+                ...field,
+                typeName: `"${type}"`,
+                type: { name: `"${type}"` } as GraphQLType
+              }
+            } else {
+              return field;
+            }
+          }) : property.fields!;
+
+          const properties = propertiesFromFields(generator.context, fields);
           propertyDeclarations(generator, properties, isInput);
         });
       } else {
