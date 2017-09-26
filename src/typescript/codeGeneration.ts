@@ -348,44 +348,49 @@ export function propertyDeclarations(generator: CodeGenerator, properties: Prope
   if (!properties) return;
   properties.forEach(property => {
     if (isAbstractType(getNamedType(property.type || property.fieldType!))) {
-      const propertySets = getPossibleTypeNames(generator, property)
-        .map(type => {
-          const inlineFragment = property.inlineFragments && property.inlineFragments.find(inlineFragment => {
-            return inlineFragment.typeCondition.toString() == type
+      if (property.fragmentSpreads.length > 0) {
+        propertyDeclaration(generator, property);
+      }
+      else {
+        const propertySets = getPossibleTypeNames(generator, property)
+          .map(type => {
+            const inlineFragment = property.inlineFragments && property.inlineFragments.find(inlineFragment => {
+              return inlineFragment.typeCondition.toString() == type
+            });
+
+            if (inlineFragment) {
+              const fields = inlineFragment.fields.map(field => {
+                if (field.fieldName === '__typename') {
+                  return {
+                    ...field,
+                    typeName: `"${inlineFragment.typeCondition}"`,
+                    type: { name: `"${inlineFragment.typeCondition}"` } as GraphQLType
+                  }
+                } else {
+                  return field;
+                }
+              });
+
+              return propertiesFromFields(generator.context, fields);
+            } else {
+              const fields = property.fields!.map(field => {
+                if (field.fieldName === '__typename') {
+                  return {
+                    ...field,
+                    typeName: `"${type}"`,
+                    type: { name: `"${type}"` } as GraphQLType
+                  }
+                } else {
+                  return field;
+                }
+              });
+
+              return propertiesFromFields(generator.context, fields);
+            }
           });
 
-          if (inlineFragment) {
-            const fields = inlineFragment.fields.map(field => {
-              if (field.fieldName === '__typename') {
-                return {
-                  ...field,
-                  typeName: `"${inlineFragment.typeCondition}"`,
-                  type: { name: `"${inlineFragment.typeCondition}"` } as GraphQLType
-                }
-              } else {
-                return field;
-              }
-            });
-
-            return propertiesFromFields(generator.context, fields);
-          } else {
-            const fields = property.fields!.map(field => {
-              if (field.fieldName === '__typename') {
-                return {
-                  ...field,
-                  typeName: `"${type}"`,
-                  type: { name: `"${type}"` } as GraphQLType
-                }
-              } else {
-                return field;
-              }
-            });
-
-            return propertiesFromFields(generator.context, fields);
-          }
-        });
-
-      propertySetsDeclaration(generator, property, propertySets);
+        propertySetsDeclaration(generator, property, propertySets);
+      }
     } else {
       if (property.fields && property.fields.length > 0
         || property.inlineFragments && property.inlineFragments.length > 0

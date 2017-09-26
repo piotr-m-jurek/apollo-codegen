@@ -51,7 +51,8 @@ export function propertyDeclaration(generator: CodeGenerator, {
   isInput,
   isArray,
   isNullable,
-  isArrayElementNullable
+  isArrayElementNullable,
+  fragmentSpreads
 }: Property, closure?: () => void) {
   const name = fieldName || propertyName;
 
@@ -79,6 +80,10 @@ export function propertyDeclaration(generator: CodeGenerator, {
 
     generator.popScope();
 
+    if (fragmentSpreads && fragmentSpreads.length > 0) {
+      generator.print(' & ' + fragmentSpreads.map((t: string) => `${t}Fragment`).join(' & '))
+    }
+
     if (isArray) {
       if (isArrayElementNullable) {
         generator.print(' | null');
@@ -95,8 +100,15 @@ export function propertyDeclaration(generator: CodeGenerator, {
     if (isInput && isNullable) {
       generator.print('?')
     }
-    generator.print(`: ${typeName || type && typeNameFromGraphQLType(generator.context, type)}`);
+
+    if (fragmentSpreads && fragmentSpreads.length > 0) {
+      generator.print(': ' + fragmentSpreads.map((t: string) => `${t}Fragment`).join(' & '))
+    }
+    else {
+      generator.print(`: ${typeName || type && typeNameFromGraphQLType(generator.context, type)}`);
+    }
   }
+
   generator.print(',');
 }
 
