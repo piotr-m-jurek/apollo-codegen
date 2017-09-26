@@ -26,12 +26,23 @@ export interface Property {
 
 export function interfaceDeclaration(generator: CodeGenerator, {
   interfaceName,
-  noBrackets
-}: { interfaceName: string, noBrackets?: boolean },
+  noBrackets,
+  fragmentSpreads
+}: { interfaceName: string, noBrackets?: boolean, fragmentSpreads?: any },
   closure: () => void) {
   generator.printNewlineIfNeeded();
   generator.printNewline();
-  generator.print(`export type ${interfaceName} = `);
+  if (noBrackets) {
+    generator.print(`export type ${interfaceName} = `);
+    if (fragmentSpreads && fragmentSpreads.length > 0) {
+      generator.print(fragmentSpreads.map((f: string) => `${f}Fragment`).join('& ') + ' & ');
+    }
+  } else {
+    generator.print(`export interface ${interfaceName} `);
+    if (fragmentSpreads && fragmentSpreads.length > 0) {
+      generator.print('extends ' + fragmentSpreads.map((f: string) => `${f}Fragment`).join(', ') + ' ');
+    }
+  }
   generator.pushScope({ typeName: interfaceName });
   if (noBrackets) {
     generator.withinBlock(closure, '', '');

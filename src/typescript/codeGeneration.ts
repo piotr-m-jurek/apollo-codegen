@@ -185,7 +185,8 @@ export function interfaceDeclarationForOperation(
   {
     operationName,
     operationType,
-    fields
+    fields,
+    fragmentSpreads
   }: LegacyOperation
 ) {
   const interfaceName = interfaceNameFromOperation({ operationName, operationType });
@@ -193,6 +194,7 @@ export function interfaceDeclarationForOperation(
   const properties = propertiesFromFields(generator.context, fields);
   interfaceDeclaration(generator, {
     interfaceName,
+    fragmentSpreads
   }, () => {
     propertyDeclarations(generator, properties);
   });
@@ -213,7 +215,8 @@ export function interfaceDeclarationForFragment(
 
   interfaceDeclaration(generator, {
     interfaceName,
-    noBrackets: isAbstractType(typeCondition)
+    noBrackets: isAbstractType(typeCondition),
+    fragmentSpreads: fragment.fragmentSpreads
   }, () => {
     if (isAbstractType(typeCondition)) {
       const propertySets = fragment.possibleTypes
