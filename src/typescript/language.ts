@@ -56,6 +56,7 @@ export function interfaceDeclaration(generator: CodeGenerator, {
 export function propertyDeclaration(generator: CodeGenerator, {
   fieldName,
   type,
+  fieldType,
   propertyName,
   typeName,
   description,
@@ -113,7 +114,10 @@ export function propertyDeclaration(generator: CodeGenerator, {
     }
 
     if (fragmentSpreads && fragmentSpreads.length > 0) {
-      generator.print(': ' + fragmentSpreads.map((t: string) => `${t}Fragment`).join(' & '))
+      const bareTypeName = fragmentSpreads.map((t: string) => `${t}Fragment`).join(' & ')
+      const t = type || fieldType
+      const finalName = t && typeNameFromGraphQLType(generator.context, t, bareTypeName) || bareTypeName
+      generator.print(`: ${finalName}`);
     }
     else {
       generator.print(`: ${typeName || type && typeNameFromGraphQLType(generator.context, type)}`);
