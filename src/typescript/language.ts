@@ -22,6 +22,7 @@ export interface Property {
   isInput?: boolean,
   isArray?: boolean,
   isArrayElementNullable?: boolean | null,
+  isConditional?: boolean,
 }
 
 export function interfaceDeclaration(generator: CodeGenerator, {
@@ -64,7 +65,8 @@ export function propertyDeclaration(generator: CodeGenerator, {
   isArray,
   isNullable,
   isArrayElementNullable,
-  fragmentSpreads
+  fragmentSpreads,
+  isConditional
 }: Property, closure?: () => void) {
   const name = fieldName || propertyName;
 
@@ -78,7 +80,7 @@ export function propertyDeclaration(generator: CodeGenerator, {
   if (closure) {
     generator.printOnNewline(name);
 
-    if (isNullable && isInput) {
+    if ((isNullable && isInput) || isConditional) {
       generator.print('?');
     }
     generator.print(': ');
@@ -109,7 +111,7 @@ export function propertyDeclaration(generator: CodeGenerator, {
 
   } else {
     generator.printOnNewline(name);
-    if (isInput && isNullable) {
+    if ((isInput && isNullable) || isConditional) {
       generator.print('?')
     }
 

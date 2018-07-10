@@ -299,14 +299,15 @@ export function propertyFromField(context: LegacyCompilerContext, field: {
   description?: string,
   fragmentSpreads?: any,
   inlineFragments?: LegacyInlineFragment[],
-  fieldName?: string
+  fieldName?: string,
+  isConditional?: boolean
 }): Property {
   let { name: fieldName, type: fieldType, description, fragmentSpreads, inlineFragments } = field;
   fieldName = fieldName || field.responseName;
 
   const propertyName = fieldName;
 
-  let property = { fieldName, fieldType, propertyName, description };
+  let property = { fieldName, fieldType, propertyName, description, isConditional: field.isConditional };
 
   const namedType = getNamedType(fieldType);
 
@@ -395,7 +396,16 @@ export function propertyDeclarations(generator: CodeGenerator, properties: Prope
         propertySetsDeclaration(generator, property, propertySets);
       }
     } else {
-      if (property.fields && property.fields.length > 0
+      if (property.fields &&
+        (property.fields.length == 0 ||
+        (property.fields.length === 1 &&
+        property.fields[0].fieldName === '__typename')) &&
+        ((property.inlineFragments && property.inlineFragments.length > 0) ||
+        (property.fragmentSpreads && property.fragmentSpreads.length > 0))
+      ) {
+        propertyDeclaration(generator, { ...property, isInput });
+      }
+      else if (property.fields && property.fields.length > 0
         || property.inlineFragments && property.inlineFragments.length > 0
         || property.fragmentSpreads && property.fragmentSpreads.length > 0
       ) {
